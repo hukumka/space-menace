@@ -257,8 +257,8 @@ impl<'s> System<'s> for PincerCollisionSystem {
                             show_explosion(
                                 &entities,
                                 small_explosion_prefab_handle,
-                                pincer_translation.x.as_f32(),
-                                pincer_translation.y.as_f32(),
+                                pincer_translation.x,
+                                pincer_translation.y,
                                 &lazy_update,
                                 &ctx,
                             );
