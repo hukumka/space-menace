@@ -10,6 +10,10 @@ use amethyst::{
     assets::{PrefabLoaderSystem, Processor},
     core::{transform::{TransformBundle}},
     input::{InputBundle, StringBindings},
+    network::{
+        NetworkSimulationTimeSystem,
+        laminar::{LaminarNetworkBundle, LaminarNetworkResource}
+    },
     renderer::{
         sprite::{SpriteRender, SpriteSheet},
         types::DefaultBackend,
@@ -18,7 +22,7 @@ use amethyst::{
     utils::application_root_dir,
     window::WindowBundle,
     Application,
-    GameDataBuilder, 
+    GameDataBuilder,
 };
 
 mod entities;
@@ -80,6 +84,7 @@ fn main() -> amethyst::Result<()> {
         .with_thread_local(RenderingSystem::<DefaultBackend, _>::new(
             graph_creator::GameGraphCreator::default(),
         ));
+
     let mut game = Application::build(assets_path, states::LoadState::default())?
         .build(game_data)?;
 
