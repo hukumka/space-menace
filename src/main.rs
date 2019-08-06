@@ -8,6 +8,7 @@ extern crate specs_derive;
 use amethyst::{
     animation::AnimationBundle,
     assets::{PrefabLoaderSystem, Processor},
+    ecs::System,
     core::transform::TransformBundle,
     input::{InputBundle, StringBindings},
     renderer::{
@@ -29,6 +30,34 @@ mod systems;
 use components::{AnimationId, AnimationPrefabData};
 use resources::Map;
 use systems::*;
+#[cfg(feature="time_metrics")]
+use systems::time_metrics::{TimeMetricsWriterSystem, TimeMetricsWrapperSystem};
+
+trait GameDataBuilderExt<'a>{
+    #[cfg(not(feature="time_metrics"))]
+    fn with_wrapped<T>(self, system: T, name: &'static str, dependencies: &[&'static str]) -> Self
+        where for<'c> T: System<'c> + 'a + Send;
+
+    #[cfg(feature="time_metrics")]
+    fn with_wrapped<T>(self, system: T, name: &'static str, dependencies: &[&'static str]) -> Self
+        where for<'c> TimeMetricsWrapperSystem<T>: System<'c> + 'a + Send;
+}
+
+impl<'a> GameDataBuilderExt<'a> for GameDataBuilder<'a, '_>{
+    #[cfg(not(feature="time_metrics"))]
+    fn with_wrapped<T>(self, system: T, name: &'static str, dependencies: &[&'static str]) -> Self
+        where for<'c> T: System<'c> + 'a + Send
+    {
+        self.with(system, name, dependencies)
+    }
+
+    #[cfg(feature="time_metrics")]
+    fn with_wrapped<T>(self, system: T, name: &'static str, dependencies: &[&'static str]) -> Self
+        where for<'c> TimeMetricsWrapperSystem<T>: System<'c> + 'a + Send
+    {
+        self.with(TimeMetricsWrapperSystem::new(system, name), name, dependencies)
+    }
+}
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -93,14 +122,14 @@ fn main() -> amethyst::Result<()> {
             "motion_system",
             &["collision_system", "parallax_system"],
         )
-        .with(
+        .with_wrapped(
             MarineAnimationSystem,
             "marine_animation_system",
             &["collision_system"],
         )
-        .with(AnimationControlSystem, "animation_control_system", &[])
-        .with(DirectionSystem, "direction_system", &[])
-        .with(
+        .with_wrapped(AnimationControlSystem, "animation_control_system", &[])
+        .with_wrapped(DirectionSystem, "direction_system", &[])
+        .with_wrapped(
             CameraMotionSystem,
             "camera_motion_system",
             &["collision_system"],
@@ -114,6 +143,9 @@ fn main() -> amethyst::Result<()> {
                 )
                 .with_plugin(RenderFlat2D::default()),
         )?;
+    #[cfg(feature="time_metrics")]
+    let game_data = game_data
+        .with_wrapped(TimeMetricsWriterSystem::with_file("time_metrics.log").expect("Cannot open time_metrics.log"), "time_metrics", &[]);
     let mut game =
         Application::build(assets_path, states::LoadState::default())?.build(game_data)?;
 

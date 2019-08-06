@@ -9,9 +9,10 @@ amethyst = { git = "https://github.com/amethyst/amethyst", features = ["nightly"
 serde = "*"
 log = "*"
 specs-derive = "*"
+crossbeam = {version = "0.7", optional = true}
 
 [features]
 default = ["metal"]
 metal = ["amethyst/metal"]
 vulkan = ["amethyst/vulkan"]
-
+time_metrics = ["crossbeam"]
