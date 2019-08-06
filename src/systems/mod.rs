@@ -5,7 +5,7 @@ mod collision;
 mod direction;
 mod motion;
 mod parallax;
-#[cfg(feature="time_metrics")]
+#[cfg(feature = "time_metrics")]
 pub mod time_metrics;
 
 pub use self::acceleration::MarineAccelerationSystem;

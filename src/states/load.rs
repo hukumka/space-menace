@@ -3,12 +3,12 @@ use amethyst::{
     prelude::{GameData, SimpleState, SimpleTrans, StateData, Trans},
 };
 
+#[cfg(feature = "time_metrics")]
+use crate::systems::time_metrics::TimeMessageChannel;
 use crate::{
     entities::{load_camera, load_camera_subject, load_marine, load_pincer},
     resources::{load_assets, AssetType, Context, Map, PrefabList},
 };
-#[cfg(feature="time_metrics")]
-use crate::systems::time_metrics::TimeMessageChannel;
 
 #[derive(Default)]
 pub struct LoadState {
@@ -21,7 +21,7 @@ impl SimpleState for LoadState {
         let world = data.world;
 
         world.add_resource(Context::new());
-        #[cfg(feature="time_metrics")]
+        #[cfg(feature = "time_metrics")]
         world.add_resource(TimeMessageChannel::new(100));
 
         self.progress_counter = Some(load_assets(
